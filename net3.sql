@@ -135,7 +135,7 @@ print '' print '*** sp_create_channel ***'
 GO
 CREATE PROC sp_create_channel(
 	@UserID				[NVARCHAR](50)
-,	@PasswordHash		[NVARCHAR](255)
+,	@ChannelHash		[NVARCHAR](255)
 ,	@ChannelID			[NVARCHAR](255)
 ) 
 AS BEGIN
@@ -147,7 +147,7 @@ AS BEGIN
 	) VALUES (
 		@ChannelID
 	,	1
-	,	@PasswordHash
+	,	@ChannelHash
 	)
 
 	INSERT INTO [UserChannels] (
@@ -163,13 +163,6 @@ AS BEGIN
 END
 GO
 
-/*
-	[MessageID]		[INT]							NOT NULL	
-,	[ChannelID]		[NVARCHAR](255)					NOT NULL	
-,	[UserID]		[NVARCHAR](50)					NOT NULL
-,	[Content] 		[TEXT]							NOT NULL
-,	[TimeSent]		[DATETIME]						NOT NULL	DEFAULT	GETDATE()
-*/
 GO
 print '' print '*** sp_create_message ***'
 GO
@@ -245,7 +238,7 @@ AS BEGIN
 
 	SELECT @ChannelCount = COUNT([ChannelID])
 	FROM [Channels]
-	WHERE [ChannelID] = @ChannelID AND [ChannelHash] = @ChannelHash
+	WHERE [ChannelID] = @ChannelID AND [ChannelHash] = @ChannelHash AND [Deleted] = 0
 
 	IF @ChannelCount = 1 
 		INSERT INTO [UserChannels] (
@@ -257,6 +250,9 @@ AS BEGIN
 		,	@UserID
 		,	'User'
 		)
+		UPDATE [Channels]
+		SET [UsersInChannel] = [UsersInChannel] + 1
+		WHERE [ChannelID] = @ChannelID
 
 END
 GO
@@ -271,6 +267,9 @@ CREATE PROC sp_user_channel_sign_out(
 AS BEGIN
 	DELETE FROM [UserChannels]
 	WHERE [ChannelID] = @ChannelID AND [UserID] = @UserID
+	UPDATE [Channels]
+	SET [UsersInChannel] = [UsersInChannel] - 1
+	WHERE [ChannelID] = @ChannelID
 END
 GO
 		
