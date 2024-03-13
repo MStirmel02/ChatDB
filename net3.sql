@@ -244,18 +244,27 @@ AS BEGIN
 	WHERE [ChannelID] = @ChannelID AND [ChannelHash] = @ChannelHash AND [Deleted] = 0
 
 	IF @ChannelCount = 1 
-		INSERT INTO [UserChannels] (
-			ChannelID
-		,	UserID
-		,	RoleID
-		) VALUES (
-			@ChannelID
-		,	@UserID
-		,	'User'
-		)
-		UPDATE [Channels]
-		SET [UsersInChannel] = [UsersInChannel] + 1
-		WHERE [ChannelID] = @ChannelID
+	BEGIN
+		BEGIN TRY 
+			BEGIN TRANSACTION
+				INSERT INTO [UserChannels] (
+					ChannelID
+				,	UserID
+				,	RoleID
+				) VALUES (
+					@ChannelID
+				,	@UserID
+				,	'User'
+				)
+				UPDATE [Channels]
+				SET [UsersInChannel] = [UsersInChannel] + 1
+				WHERE [ChannelID] = @ChannelID
+			COMMIT TRANSACTION
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRANSACTION
+		END CATCH
+	END
 
 END
 GO
@@ -276,11 +285,20 @@ AS BEGIN
 	WHERE [ChannelID] = @ChannelID AND [UserID] = @UserID
 	
 	IF @ChannelCount = 1
-		DELETE FROM [UserChannels]
-		WHERE [ChannelID] = @ChannelID AND [UserID] = @UserID
-		UPDATE [Channels]
-		SET [UsersInChannel] = [UsersInChannel] - 1
-		WHERE [ChannelID] = @ChannelID
+	BEGIN
+		BEGIN TRY
+			BEGIN TRANSACTION
+				DELETE FROM [UserChannels]
+				WHERE [ChannelID] = @ChannelID AND [UserID] = @UserID
+				UPDATE [Channels]
+				SET [UsersInChannel] = [UsersInChannel] - 1
+				WHERE [ChannelID] = @ChannelID
+			COMMIT TRANSACTION
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRANSACTION
+		END CATCH
+	END
 END
 GO
 		
