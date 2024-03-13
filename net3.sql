@@ -219,8 +219,11 @@ CREATE PROC sp_user_view_channels(
 	@UserID				[NVARCHAR](50)
 )
 AS BEGIN
-	SELECT [ChannelID], [RoleID]
+	SELECT [UserChannels].[ChannelID], [UserChannels].[RoleID],
+	[Channels].[UsersInChannel]
 	FROM [UserChannels]
+	INNER JOIN [Channels]
+	ON [Channels].[ChannelID] = [UserChannels].[ChannelID]
 	WHERE [UserID] = @UserID
 END
 GO
@@ -265,11 +268,19 @@ CREATE PROC sp_user_channel_sign_out(
 ,	@ChannelID			[NVARCHAR](255)
 )
 AS BEGIN
-	DELETE FROM [UserChannels]
+
+	DECLARE @ChannelCount [INT]
+
+	SELECT @ChannelCount = COUNT([ChannelID])
+	FROM [UserChannels]
 	WHERE [ChannelID] = @ChannelID AND [UserID] = @UserID
-	UPDATE [Channels]
-	SET [UsersInChannel] = [UsersInChannel] - 1
-	WHERE [ChannelID] = @ChannelID
+	
+	IF @ChannelCount = 1
+		DELETE FROM [UserChannels]
+		WHERE [ChannelID] = @ChannelID AND [UserID] = @UserID
+		UPDATE [Channels]
+		SET [UsersInChannel] = [UsersInChannel] - 1
+		WHERE [ChannelID] = @ChannelID
 END
 GO
 		
