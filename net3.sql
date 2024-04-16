@@ -206,9 +206,26 @@ CREATE PROC sp_user_sign_in(
 ,	@PasswordHash		[NVARCHAR](255)
 )
 AS BEGIN
-	SELECT COUNT([UserID])
+	DECLARE @count INT;
+
+	SELECT @count = COUNT([UserID])
 	FROM [Users]
 	WHERE [UserID] = @UserID AND [PasswordHash] = @PasswordHash
+
+	IF @count = 1
+	BEGIN
+		BEGIN TRY 
+			BEGIN TRANSACTION
+				UPDATE [Users]
+				SET [LastLoggedIn] = GETDATE()
+				WHERE [UserID] = @UserID
+			COMMIT TRANSACTION
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRANSACTION
+		END CATCH
+	END
+		
 END
 GO
 
