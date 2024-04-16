@@ -194,7 +194,7 @@ AS BEGIN
 	SELECT [UserID], [Content], [TimeSent]
 	FROM [Messages]
 	WHERE [ChannelID] = @ChannelID
-	ORDER BY [TimeSent] DESC
+	ORDER BY [TimeSent] ASC
 END
 GO
 
