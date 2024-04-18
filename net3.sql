@@ -112,18 +112,19 @@ GO
 CREATE PROC sp_create_user(
 	@UserID				[NVARCHAR](50)
 ,	@PasswordHash		[NVARCHAR](255)
-,	@Email				[NVARCHAR](255)
 )
 AS BEGIN
 
 	INSERT INTO [Users] (
 		[UserID]
 	,	[PasswordHash]
-	,	[Email]
+	,	[DateCreated]
+	,	[LastLoggedIn]
 	) VALUES (
 		@UserID
 	,	@PasswordHash
-	,	@Email
+	,	GETDATE()
+	,	GETDATE()
 	)
 
 END
