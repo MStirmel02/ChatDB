@@ -87,11 +87,11 @@ CREATE TABLE [dbo].[Messages](
 ,	CONSTRAINT [pk_messageid]			
 	PRIMARY KEY([MessageID])
 ,	CONSTRAINT [fk_messages_channelID] 
-	FOREIGN KEY([ChannelID])
-	REFERENCES [Channels]([ChannelID])
+	FOREIGN KEY([ChannelID]) 
+	REFERENCES [Channels]([ChannelID]) ON UPDATE CASCADE
 ,	CONSTRAINT [fk_messages_userID]	
-	FOREIGN KEY([UserID])
-	REFERENCES [Users]([UserID])
+	FOREIGN KEY([UserID])  
+	REFERENCES [Users]([UserID]) ON UPDATE CASCADE
 )
 GO
 
@@ -320,3 +320,27 @@ AS BEGIN
 END
 GO
 		
+		
+
+GO
+print '' print '*** sp_delete_channel ***'
+GO
+CREATE PROC sp_delete_channel(
+	@ChannelID			[NVARCHAR](255)
+)
+AS BEGIN
+		BEGIN TRY
+			BEGIN TRANSACTION
+				DELETE FROM [UserChannels]
+				WHERE [ChannelID] = @ChannelID
+				UPDATE [Channels]
+				SET [Deleted] = 1
+				, [ChannelID] = NEWID()
+				WHERE [ChannelID] = @ChannelID
+			COMMIT TRANSACTION
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRANSACTION
+		END CATCH
+END
+GO
