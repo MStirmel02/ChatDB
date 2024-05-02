@@ -344,3 +344,28 @@ AS BEGIN
 		END CATCH
 END
 GO
+
+
+GO
+print '' print '*** sp_select_users_msg ***'
+GO
+CREATE PROC sp_select_users_msg
+AS BEGIN
+	SELECT Users.UserID, COUNT(Messages.MessageID) AS MessageCount
+	FROM Users
+	LEFT JOIN Messages ON Users.UserID = Messages.UserID
+	GROUP BY Users.UserID;
+END
+GO
+
+
+GO
+print '' print '*** sp_select_all_channels ***'
+GO
+CREATE PROC sp_select_all_channels
+AS BEGIN
+	SELECT ChannelID, UsersInChannel
+	FROM Channels
+	WHERE Deleted = 0;
+END
+GO
